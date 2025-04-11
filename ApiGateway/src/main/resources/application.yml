@@ -1,0 +1,39 @@
+server.port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+logging:
+  level:
+    io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider: OFF
+
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+
+
+        - id: post-service
+          uri: lb://post-service
+          predicates:
+            - Path=/post/**
+
+
+        - id: connection-service
+          uri: lb://connection-service
+          predicates:
+            - Path=/connections/**
+
+
+
+
