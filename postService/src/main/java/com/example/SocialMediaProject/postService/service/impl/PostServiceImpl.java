@@ -1,5 +1,8 @@
 package com.example.SocialMediaProject.postService.service.impl;
 
+import com.example.SocialMediaProject.postService.auth.AuthContextHolder;
+import com.example.SocialMediaProject.postService.client.ConnectionServiceClient;
+import com.example.SocialMediaProject.postService.dto.PersonDto;
 import com.example.SocialMediaProject.postService.dto.PostCreateDto;
 import com.example.SocialMediaProject.postService.dto.PostDto;
 import com.example.SocialMediaProject.postService.entity.PostEntity;
@@ -21,11 +24,12 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepo postRepo;
     private final ModelMapper modelMapper;
+    private final ConnectionServiceClient client;
 
     @Override
-    public PostDto createPost(PostCreateDto postCreateDto,Long userId) {
+    public PostDto createPost(PostCreateDto postCreateDto) {
         PostEntity postEntity=modelMapper.map(postCreateDto,PostEntity.class);
-        postEntity.setUserId(userId);
+        postEntity.setUserId(AuthContextHolder.getCurrentUserId());
         postEntity=postRepo.save(postEntity);
         return modelMapper.map(postEntity,PostDto.class);
 
@@ -34,6 +38,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDto getPostById(Long postid) {
         log.info("getting user post by id",postid);
+
+        List<PersonDto> personDtos=client.getListOfPerson(AuthContextHolder.getCurrentUserId());
 
         PostEntity postEntity=postRepo.findById(postid)
                 .orElseThrow(()->new ResourceException("Post not found" + postid));

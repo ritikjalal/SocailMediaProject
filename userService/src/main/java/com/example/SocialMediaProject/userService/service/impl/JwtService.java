@@ -1,7 +1,6 @@
 package com.example.SocialMediaProject.userService.service.impl;
 
 import com.example.SocialMediaProject.userService.entity.UserEntity;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +22,6 @@ public class JwtService {
     }
 
 
-    //adding access token
     public String generateAccessToken(UserEntity userEntity){
         return Jwts.builder()
                 .subject(userEntity.getId().toString())
@@ -35,29 +33,5 @@ public class JwtService {
     }
 
 
-    //adding refresh token
-    public String generateRefreshToken(UserEntity entity){
-        return Jwts.builder()
-                .subject(entity.getId().toString())
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis()+1000*60*10))
-                .signWith(getSecretKey())
-                .compact();
-    }
-
-    //how to get something from the jwt token like suppose i want user id
-    public Long getReturnuserId(String token){
-        token = token.replaceAll("\\s", "");
-        System.out.println("new Refrsh token    "+token);
-        Claims claims=Jwts.parser()
-                .verifyWith(getSecretKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        Long userid=Long.valueOf(claims.getSubject());
-        System.out.println("user id  "+ userid);
-        return userid;
-    }
 
 }

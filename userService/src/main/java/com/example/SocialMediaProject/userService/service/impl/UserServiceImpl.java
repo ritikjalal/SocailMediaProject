@@ -1,6 +1,7 @@
 package com.example.SocialMediaProject.userService.service.impl;
 
 import com.example.SocialMediaProject.userService.dto.LoginDto;
+import com.example.SocialMediaProject.userService.dto.LoginResponseDto;
 import com.example.SocialMediaProject.userService.dto.SignUpDto;
 import com.example.SocialMediaProject.userService.dto.Userdto;
 import com.example.SocialMediaProject.userService.entity.UserEntity;
@@ -38,7 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Userdto login(LoginDto loginDto) {
+    public LoginResponseDto login(LoginDto loginDto) {
 
         log.info("Sign up with user:{}",loginDto.getEmail());
 
@@ -47,13 +48,14 @@ public class UserServiceImpl implements UserService {
 
         boolean isPasswordMatch=BCrypt.matchPassword(loginDto.getPassword(),userEntity.getPassword());
 
+        String token;
         if(isPasswordMatch){
-            jwtService.generateAccessToken(userEntity);
+            token=jwtService.generateAccessToken(userEntity);
         }else{
             throw new BadRequest("Incorrect email and passowrd");
         }
 
-        return modelMapper.map(userEntity,Userdto.class);
+        return new LoginResponseDto(token);
 
 
     }
