@@ -1,6 +1,5 @@
-package com.example.ConnectionService.config;
+package com.example.SocialMediaProject.postService.auth;
 
-import com.example.ConnectionService.auth.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

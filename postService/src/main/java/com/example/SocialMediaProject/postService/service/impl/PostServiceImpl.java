@@ -24,7 +24,7 @@ public class PostServiceImpl implements PostService {
 
     private final PostRepo postRepo;
     private final ModelMapper modelMapper;
-    private final ConnectionServiceClient client;
+    private final ConnectionServiceClient connectionServiceClient;
 
     @Override
     public PostDto createPost(PostCreateDto postCreateDto) {
@@ -37,9 +37,14 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto getPostById(Long postid) {
-        log.info("getting user post by id",postid);
+        log.info("getting user post by id:{}",postid);
 
-        List<PersonDto> personDtos=client.getListOfPerson(AuthContextHolder.getCurrentUserId());
+        log.info("getting user id:{}",AuthContextHolder.getCurrentUserId());
+
+        List<PersonDto> personDtos=connectionServiceClient.getListOfPerson(AuthContextHolder.getCurrentUserId());
+
+        log.info("getting after user id:{}",AuthContextHolder.getCurrentUserId());
+
 
         PostEntity postEntity=postRepo.findById(postid)
                 .orElseThrow(()->new ResourceException("Post not found" + postid));
@@ -48,10 +53,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDto> getAllPost(Long userId) {
-        log.info("getting all post of user",userId);
 
-        return postRepo.findAll().stream()
-                .map(postEntity -> modelMapper.map(postEntity,PostDto.class))
+        log.info("getting all post of user:{}",userId);
+
+        return postRepo.findByUserId(userId).stream()
+                .map(postEntity -> modelMapper.map(postEntity, PostDto.class))
                 .collect(Collectors.toList());
+
     }
 }
