@@ -11,4 +11,8 @@ public interface ConnectionService {
     List<Person> getDegreeConnectionOfUser(Long userId);
 
     void sendRequest(Long toUserId);
+
+    void acceptConnectionRequest(Long senderId);
+
+    void rejectConnectionRequest(Long senderId);
 }
