@@ -1,7 +1,9 @@
 package com.example.SocialMediaProject.postService.service.impl;
 
+import com.example.SocialMediaProject.postService.auth.AuthContextHolder;
 import com.example.SocialMediaProject.postService.entity.PostEntity;
 import com.example.SocialMediaProject.postService.entity.PostLikeEntity;
+import com.example.SocialMediaProject.postService.event.PostLikeEvent;
 import com.example.SocialMediaProject.postService.exception.BadRequest;
 import com.example.SocialMediaProject.postService.exception.ResourceException;
 import com.example.SocialMediaProject.postService.repo.PostLikeRepo;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,14 +25,17 @@ public class PostLikeServiceImpl implements PostLikeService {
     private final PostLikeRepo postLikeRepo;
     private final PostRepo postRepo;
     private final ModelMapper modelMapper;
+    private final KafkaTemplate<Long, PostLikeEvent> postLikeEventKafkaTemplate;
 
     @Override
     @Transactional
     public void postLike(Long postId) {
-        Long userId=123L;
+
+        Long userId= AuthContextHolder.getCurrentUserId();
+
         log.info("like in the post:{} by : {} ",postId,userId);
 
-        postRepo.findById(postId)
+        PostEntity postEntity=postRepo.findById(postId)
                 .orElseThrow(()->new ResourceException("Post not found" + postId));
 
         boolean like=postLikeRepo.existsByUserIdAndPostId(userId,postId);
@@ -43,7 +49,18 @@ public class PostLikeServiceImpl implements PostLikeService {
         postLikeRepo.save(postLikeEntity);
 
 
-        //sent notification
+        //sent notification via kafka
+
+        PostLikeEvent postLikeEvent=PostLikeEvent.builder()
+                .postId(postEntity.getId())
+                .ownerUserId(postEntity.getUserId())
+                .likeByUserId(userId)
+                .build();
+
+        postLikeEventKafkaTemplate.send("post-like-topic",postLikeEvent);
+
+        //
+
 
 
 
@@ -53,7 +70,8 @@ public class PostLikeServiceImpl implements PostLikeService {
     @Transactional
     public void postDelete(Long postId) {
 
-        Long userId=123L;
+        Long userId= AuthContextHolder.getCurrentUserId();
+
         log.info("unlike in the post:{} by : {} ",postId,userId);
 
         postRepo.findById(postId)

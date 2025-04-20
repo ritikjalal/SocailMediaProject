@@ -5,6 +5,7 @@ import com.example.SocialMediaProject.userService.dto.LoginResponseDto;
 import com.example.SocialMediaProject.userService.dto.SignUpDto;
 import com.example.SocialMediaProject.userService.dto.Userdto;
 import com.example.SocialMediaProject.userService.entity.UserEntity;
+import com.example.SocialMediaProject.userService.event.UserCreatedEvent;
 import com.example.SocialMediaProject.userService.exception.BadRequest;
 import com.example.SocialMediaProject.userService.repo.UserRepo;
 import com.example.SocialMediaProject.userService.service.UserService;
@@ -12,6 +13,7 @@ import com.example.SocialMediaProject.userService.utils.BCrypt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,6 +24,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
     private final JwtService jwtService;
+
+    private final KafkaTemplate<Long,UserCreatedEvent> userCreatedEventLongKafkaTemplate;
 
     @Override
     public Userdto signUp(SignUpDto signUpDto) {
@@ -34,6 +38,17 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity=modelMapper.map(signUpDto,UserEntity.class);
         userEntity.setPassword(BCrypt.hash(userEntity.getPassword()));
         userEntity=userRepo.save(userEntity);
+
+        //kafka
+
+        UserCreatedEvent userCreatedEvent=UserCreatedEvent.builder()
+                .userId(userEntity.getId())
+                .name(userEntity.getName())
+                .build();
+
+        userCreatedEventLongKafkaTemplate.send("user-created-topic",userCreatedEvent);
+
+
         return modelMapper.map(userEntity,Userdto.class);
 
     }
