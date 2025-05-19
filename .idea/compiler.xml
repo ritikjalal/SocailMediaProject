@@ -8,7 +8,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="connectionService" />
-        <module name="configServer" />
         <module name="notificationService" />
         <module name="ServerRegistry" />
         <module name="postService" />
@@ -17,6 +16,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="configServer" target="17" />
       <module name="ConnectionService" target="17" />
     </bytecodeTargetLevel>
   </component>

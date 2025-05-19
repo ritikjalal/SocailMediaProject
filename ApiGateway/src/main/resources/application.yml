@@ -1,10 +1,50 @@
 
+server.port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+jwt:
+  secretKey: qwertyuiytrdsagbhnhhgfdssdfghgfdsdfgfdsfghgfdssdfghgfdsdfghgfdfsf
 
 
+logging:
+  level:
+    io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider: OFF
 
 spring:
-  application:
-    name: api-gateway
+  application.name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/user/**
+          filters:
+            - StripPrefix=2
 
-  config:
-    import: configserver:http://localhost:8888
+
+
+        - id: post-service
+          uri: lb://post-service
+          predicates:
+            - Path=/api/v1/post/**
+          filters:
+            - StripPrefix=2
+            - name: Authentication
+
+
+        - id: connection-service
+          uri: lb://connection-service
+          predicates:
+            - Path=/api/v1/connections/**
+          filters:
+            - StripPrefix=2
+            - name: Authentication
+
+
+
+

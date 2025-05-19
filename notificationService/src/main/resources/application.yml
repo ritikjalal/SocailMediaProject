@@ -12,6 +12,3 @@ spring:
         spring.json:
           trusted.packages: com.example.SocialMediaProject.*
 
-
-  config:
-    import: configserver:http://localhost:8888
